@@ -1,5 +1,6 @@
 from ._api_response_object import object_helper
 from .workspace import Workspace
+from .team import Team
 from .ssh_key import SSHKey
 
 
@@ -104,6 +105,51 @@ class Organization(object):
         response = self._api_handler.call(
             uri=f'organizations/{self.name}/workspaces/{name}')
         return Workspace(workspace=object_helper(response.data),
+                         organization_name=self.name,
+                         api_handler=self._api_handler)
+
+    def list_teams(self):
+        """
+        Returns list of all team objects in the provided organization.
+        If data response is empty (empty page) stop making queries.
+        """
+        teams = []
+        params = {"page[size]": 100, "page[number]": 1}
+        while True:
+            response = self._api_handler.call(
+                uri=f'organizations/{self.name}/teams', params=params)
+            if not response.data:
+                break
+            for team in response.data:
+                teams.append(
+                    Team(workspace=object_helper(team),
+                              organization_name=self.name,
+                              api_handler=self._api_handler))
+            params["page[number]"] += 1
+        return teams
+
+    def create_team(self, name, manage_workspaces=True):
+        payload = {
+            "data": {
+                "type": "teams",
+                "attributes": {
+                    "name": name",
+                    "organization-access": {
+                    "manage-workspaces": manage_workspaces
+                    }
+                }
+            }
+        }
+        return self._api_handler.call(
+            uri=f'organizations/{self.name}/teams',
+            method='post',
+            json=payload).data
+
+    def get_team(self, team_id):
+        response = self._api_handler.call(
+            uri=f'organizations/{self.name}/teams/{team_id}'
+        )
+        return Team(team=object_helper(response.data),
                          organization_name=self.name,
                          api_handler=self._api_handler)
 
