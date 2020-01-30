@@ -1,7 +1,7 @@
 from .handler import APICaller
 from ._api_response_object import object_helper
 from .organization import Organization
-
+from .team import Team
 
 class Client():
     """
@@ -20,7 +20,10 @@ class Client():
             'Authorization': f'Bearer {token}'
         }
         self.ssl_verification = ssl_verification
-        self._api_handler = APICaller(base_url=self.url, headers=self.headers)
+        self._api_handler = APICaller(
+            base_url=self.url,
+            headers=self.headers
+        )
 
     def list_organizations(self):
         """ Returns list of instantiated class objects for workspaces. """
@@ -28,24 +31,28 @@ class Client():
         response = self._api_handler.call(uri='organizations')
         for organization in response.data:
             organizations.append(
-                Organization(organization=object_helper(organization),
-                             api_handler=self._api_handler))
+                Organization(
+                    organization=object_helper(organization),
+                    api_handler=self._api_handler)
+            )
         return organizations
 
     def set_organization(self, id):
         """ Instantiates a given organization class based off the passed id/name. """
         response = self._api_handler.call(uri=f'organizations/{id}')
-        return Organization(organization=object_helper(response.data),
-                            api_handler=self._api_handler)
+        return Organization(
+            organization=object_helper(response.data),
+            api_handler=self._api_handler
+        )
 
-    def create_organization(self,
-                            name,
-                            email,
-                            session_timeout=20160,
-                            session_remember=20160,
-                            collaborator_auth_policy='password',
-                            cost_estimation_enabled=False,
-                            owners_team_saml_role_id=''):
+    def create_organization(
+        self,
+        name,
+        email,
+        session_timeout=20160,
+        session_remember=20160,
+        collaborator_auth_policy='password',
+        owners_team_saml_role_id=''):
         payload = {
             "data": {
                 "type": "organizations",
@@ -55,17 +62,18 @@ class Client():
                     "session-timeout": session_timeout,
                     "session-remember": session_remember,
                     "collaborator-auth-policy": collaborator_auth_policy,
-                    "owners-team-saml-role-id": owners_team_saml_role_id,
-                    "cost-estimation-enabled": cost_estimation_enabled
+                    "owners-team-saml-role-id": owners_team_saml_role_id
                 }
             }
         }
-        response = self._api_handler.call(method='post',
-                                          uri=f'organizations',
-                                          json=payload)
-        return response.data
+        return self._api_handler.call(
+            method='post',
+            uri=f'organizations',
+            json=payload
+        ).data
 
     def destroy_organization(self, name):
-        return self._api_handler.call(method='delete',
-                                      uri=f"organizations/{name}")
-
+        return self._api_handler.call(
+            method='delete',
+            uri=f"organizations/{name}"
+        )

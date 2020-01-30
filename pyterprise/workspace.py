@@ -4,7 +4,6 @@ from ._api_response_object import object_helper, collections
 from .run import Run
 from .variable import Variable
 
-
 class Workspace(object):
 
     def __init__(self, workspace, organization_name, api_handler):
@@ -32,12 +31,8 @@ class Workspace(object):
         self.vcs_repo = attributes.vcs_repo
         self.permissions = attributes.permissions
         self.actions = attributes.actions
-        self.description = attributes.description
         self.file_triggers_enabled = attributes.file_triggers_enabled
         self.trigger_prefixes = attributes.trigger_prefixes
-        self.source = attributes.source
-        self.source_name = attributes.source_name
-        self.source_url = attributes.source_url
         self.links = workspace.links
 
     def __str__(self):
@@ -240,8 +235,11 @@ class Workspace(object):
                 }
             }
         }
-        return self._api_handler.call(uri=f'vars', method='post',
-                                      json=payload).data
+        return self._api_handler.call(
+            uri=f'vars',
+            method='post',
+            json=payload
+        ).data
 
     def get_run(self, run_id):
         run = self._api_handler.call(uri=f'/runs/{run_id}').data

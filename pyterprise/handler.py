@@ -24,7 +24,6 @@ class APICaller(object):
         else:
             raise APIException(f"Error: {response.status_code}: {response.content}, {url}", response)
 
-
 class APIResponse(object):
     def __init__(self, response):
         self.data = response.get("data", [])
