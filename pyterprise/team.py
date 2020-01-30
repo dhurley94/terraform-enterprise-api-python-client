@@ -102,14 +102,14 @@ class Team(object):
         https://www.terraform.io/docs/cloud/api/team-members.html#delete-a-user-from-team
         """
         payload = {
-        "data": {
-            {
-                "type": "users",
-                "id": user
+            "data": {
+                {
+                    "type": "users",
+                    "id": user
+                }
             }
         }
-    }
-    return self._api_handler.call(
-        uri=f'teams/{self.id}/relationships/users',
-        method='delete',
-        json=payload).data
+        return self._api_handler.call(
+            uri=f'teams/{self.id}/relationships/users',
+            method='delete',
+            json=payload).data
