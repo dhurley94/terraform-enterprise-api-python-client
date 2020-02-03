@@ -1,4 +1,5 @@
 from ._api_response_object import object_helper
+from .handler import APICaller
 from .ssh_key import SSHKey
 from .user import User
 
@@ -73,7 +74,8 @@ class Team(object):
         return self._api_handler.call(
             uri=f'team-workspaces',
             method='post',
-            json=payload).data
+            json=payload
+        ).data
     
     def assign_user(self, user):
         """

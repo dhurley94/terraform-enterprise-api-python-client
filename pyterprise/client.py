@@ -12,7 +12,7 @@ class Client():
     def __init__(self):
         return
 
-    def init(self, token, url, ssl_verification=True, version='v2'):
+    def init(self, token, url="https://app.terraform.io/api/v2", ssl_verification=True, version='v2', cloud=False):
         self.token = token
         self.url = url + f'/api/{version}/'
         self.headers = {
@@ -21,6 +21,10 @@ class Client():
         }
         self.ssl_verification = ssl_verification
         self._api_handler = APICaller(base_url=self.url, headers=self.headers)
+        self.cloud = cloud
+
+    def check_cloud(self):
+        return self.cloud
 
     def list_organizations(self):
         """ Returns list of instantiated class objects for workspaces. """
@@ -28,8 +32,11 @@ class Client():
         response = self._api_handler.call(uri='organizations')
         for organization in response.data:
             organizations.append(
-                Organization(organization=object_helper(organization),
-                             api_handler=self._api_handler))
+                Organization(
+                    organization=object_helper(organization),
+                    api_handler=self._api_handler
+                )
+            )
         return organizations
 
     def set_organization(self, id):
@@ -60,12 +67,16 @@ class Client():
                 }
             }
         }
-        response = self._api_handler.call(method='post',
-                                          uri=f'organizations',
-                                          json=payload)
+        response = self._api_handler.call(
+            method='post',
+            uri=f'organizations',
+            json=payload
+        )
         return response.data
 
     def destroy_organization(self, name):
-        return self._api_handler.call(method='delete',
-                                      uri=f"organizations/{name}")
+        return self._api_handler.call(
+            method='delete',
+            uri=f"organizations/{name}"
+        )
 
