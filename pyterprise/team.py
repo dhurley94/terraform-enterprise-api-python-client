@@ -4,21 +4,38 @@ from .ssh_key import SSHKey
 from .user import User
 
 class Team(object):
-    def __init__(self, team, organization_name, api_handler):
+    def __init__(self, team, api_handler):
         self._api_handler = api_handler
         
         self.id = team.id
         attributes = team.attributes
         self.name = attributes.name
         self.users_count = attributes.users_count
-        self.visibility = attributes.visibility
         self.permissions = attributes.permissions
-        self.organization_access = attributes.organization_access
-        relationships = workspace.relationships
+        relationships = team.relationships
+        self.organizations = relationships.organization
         self.users = relationships.users
         self.authentication_token = relationships.authentication_token
         self.links = team.links
     
+    def update(self, visibility, manage_vcs_settings=True):
+        payload = {
+            "data": {
+                "type": "teams",
+                "attributes": {
+                "visibilty": visibility,
+                    "organization-access": {
+                        "manage-vcs-settings": manage_vcs_settings
+                    }
+                }
+            }
+        }
+        return self._api_handler.call(
+            uri=f'teams/{self.id}',
+            method='patch',
+            json=payload
+        ).data
+
     def generate_token(self):
         """
         Generates a new team token and overrides existing token if one exists.
@@ -63,9 +80,9 @@ class Team(object):
                 },
                 "team": {
                     "data": {
-                        "type":"teams",
-                        "id": self.id
-                    }
+                            "type":"teams",
+                            "id": self.id
+                        }
                     }
                 },
                 "type":"team-workspaces"
@@ -94,7 +111,8 @@ class Team(object):
         return self._api_handler.call(
             uri=f'teams/{self.id}/relationships/users',
             method='post',
-            json=payload).data
+            json=payload
+        ).data
             
     def delete_user(self, user):
         """
@@ -104,14 +122,15 @@ class Team(object):
         https://www.terraform.io/docs/cloud/api/team-members.html#delete-a-user-from-team
         """
         payload = {
-        "data": {
-            {
-                "type": "users",
-                "id": user
+            "data": {
+                {
+                    "type": "users",
+                    "id": user
+                }
             }
         }
-    }
-    return self._api_handler.call(
-        uri=f'teams/{self.id}/relationships/users',
-        method='delete',
-        json=payload).data
+        return self._api_handler.call(
+            uri=f'teams/{self.id}/relationships/users',
+            method='delete',
+            json=payload
+        ).data
